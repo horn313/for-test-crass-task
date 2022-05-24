@@ -1,0 +1,8 @@
+server_name: dev.example.com
+ip_for_access: 192.168.0.0/24
+db_name: test
+db_user: admin
+db_pass: admin
+db_user_2: test
+db_pass_2: test
+mysql_port: 3336

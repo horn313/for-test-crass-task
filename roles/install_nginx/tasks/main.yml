@@ -1,0 +1,32 @@
+---
+# tasks file for install_nginx
+- name: install nginx for redhat and forkes
+  yum:
+    name=nginx
+    state=latest
+  when:
+    ansible_os_family == "RedHat"
+
+- name: install nginx for debian and forkes
+  apt:
+    name=nginx
+    state=latest
+  when:
+    ansible_os_family == "Debian"
+
+- name: Copy our config file to prod serv
+  template:
+    src=templates/prod.conf
+    dest=/etc/nginx/sites-enabled/prod.conf
+  when:
+    inventory_hostname in groups["prod"]
+  notify:
+    - Restart nginx
+
+- name: Copy our config file to dev serv
+  when:  inventory_hostname in groups["dev"]
+  template:
+    src=templates/dev.conf
+    dest=/etc/nginx/sites-enabled/dev.conf
+  notify:
+    - Restart nginx

@@ -1,0 +1,5 @@
+    server_name: prod.example.com
+    db_name: main
+    db_user: admin
+    db_pass: admin
+    mysql_port: 3306

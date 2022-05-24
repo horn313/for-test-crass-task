@@ -1,0 +1,16 @@
+---
+- hosts: prod
+  become: true
+  roles:
+   - install_nginx
+   - install_mysql
+  vars_files:
+    - vars/prod.yml
+
+- hosts: dev
+  become: true
+  roles:
+   - install_nginx
+   - install_mysql
+  vars_files:
+    - vars/dev.yml

@@ -1,0 +1,77 @@
+---
+# tasks file for install_mysql
+- name: Install Mysql on our servers (prod and dev)
+  package:
+      name: "{{item}}"
+      state: present
+  loop:
+      - mysql-server
+      - mysql-client
+      - python3-mysqldb
+      - libmysqlclient-dev
+  become: yes
+
+- name: start and enable mysql service
+  become: yes
+  service:
+      name: mysql
+      state: started
+      enabled: yes
+
+- name: fenable remote login to mysql
+  lineinfile:
+     path: /etc/mysql/mysql.conf.d/mysqld.cnf
+     regexp: '^bind-address'
+     line: 'bind-address = 0.0.0.0'
+     backup: yes
+  notify:
+    - Restart mysql server
+- name: Change mysql port
+  lineinfile:
+     path: /etc/mysql/mysql.conf.d/mysqld.cnf
+     regexp: '^# port'
+     line: 'port = {{mysql_port}}'
+     backup: yes
+  notify:
+    - Restart mysql server
+
+
+- name: create a database
+  mysql_db:
+    name: "{{db_name}}"
+    state: present
+
+- name: create admin user for db on prod
+  no_log: true
+  mysql_user:
+    name: "{{db_user}}"
+    password: "{{db_pass}}"
+    encrypted: no
+    priv: '{{db_name}}.*:ALL'
+    state: present
+    host: '%' 
+  when:
+    inventory_hostname in groups["prod"]
+
+- name: create admin user for db on dev
+  mysql_user:
+    name: "{{db_user}}"
+    password: "{{db_pass}}"
+    encrypted: no
+    priv: '{{db_name}}.*:ALL'
+    state: present
+    host: '%'
+  when:
+    inventory_hostname in groups["dev"]
+
+- name: create test user with read-only privileges for db on dev
+  mysql_user:
+    name: "{{db_user_2}}"
+    password: "{{db_pass_2}}"
+    encrypted: no
+    priv: '{{db_name}}.*:SELECT'
+    state: present
+    host: '%'
+  when:
+    inventory_hostname in groups["dev"]
+
